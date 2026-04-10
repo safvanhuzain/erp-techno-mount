@@ -42,6 +42,24 @@ frappe.query_reports["Budget Sheet"] = {
 	initial_depth: 0,
 
 	formatter: function (value, row, column, data, default_formatter) {
+		// Comma-separated quotation names (merged rows): one Link per name.
+		if (
+			column.fieldname === "quotation" &&
+			data &&
+			cint(data.indent) === 1 &&
+			data.quotation
+		) {
+			const names = String(data.quotation)
+				.split(",")
+				.map((s) => s.trim())
+				.filter(Boolean);
+			if (names.length) {
+				return names
+					.map((name) => frappe.utils.get_form_link("Quotation", name, true, name))
+					.join(", ");
+			}
+		}
+
 		value = default_formatter(value, row, column, data);
 		// Link fields: default_formatter returns real HTML — never escape_html here.
 		if (data && cint(data.indent) === 0 && column.fieldname === "project" && value) {
